@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Promotions - Smart Farmer Marketplace{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2>Current Promotions</h2>
+        <p class="text-muted">Special deals and discounts available now</p>
+    </div>
+</div>
+
+{% if promotions %}
+<div class="row">
+    {% for promo in promotions %}
+    <div class="col-md-4 col-sm-6 mb-4">
+        <div class="card h-100 product-card border-warning">
+            <div class="position-relative">
+                {% if promo.product.image_path %}
+                    <img src="{{ url_for('static', filename='images/uploads/' + promo.product.image_path) }}" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x200/FFD700/000000?text={{ promo.product.name[:20]|urlencode }}';" class="card-img-top product-image" alt="{{ promo.product.name }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/300x200/FFD700/000000?text={{ promo.product.name[:20]|urlencode }}" class="card-img-top product-image" alt="{{ promo.product.name }}">
+                {% endif %}
+                <div class="position-absolute top-0 start-0 badge bg-warning text-dark">{{ "%.0f"|format(promo.promotion.discount_percent) }}% OFF</div>
+            </div>
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">{{ promo.product.name }}</h5>
+                <p class="card-text flex-grow-1">{{ promo.product.description[:100] }}{% if promo.product.description|length > 100 %}...{% endif %}</p>
+                <div class="mt-auto">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted text-decoration-line-through">₹{{ "%.2f"|format(promo.product.price) }}</span>
+                            <span class="fw-bold text-success ms-2">₹{{ "%.2f"|format(promo.product.price * (1 - promo.promotion.discount_percent/100)) }}</span>
+                        </div>
+                        <small class="text-muted"><i class="fas fa-tags"></i> {{ promo.product.category }}</small>
+                    </div>
+                    <div class="mt-2">
+                        <span class="badge bg-warning text-dark">
+                            <i class="fas fa-calendar"></i> Ends {{ promo.promotion.end_date.strftime('%b %d') }}
+                        </span>
+                    </div>
+                    <div class="mt-2">
+                        <a href="{{ url_for('product_detail', product_id=promo.product.id) }}" class="btn btn-warning btn-sm w-100">View Deal</a>
+                    </div>
+                    <div class="mt-2">
+                        <a href="{{ url_for('add_to_cart', product_id=promo.product.id) }}" class="btn btn-outline-warning btn-sm w-100">
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="row">
+    <div class="col-12">
+        <div class="text-center py-5">
+            <i class="fas fa-percentage fa-3x text-muted mb-3"></i>
+            <h4>No active promotions</h4>
+            <p class="text-muted">There are currently no active promotions. Check back later for special deals.</p>
+            <a href="{{ url_for('browse_products') }}" class="btn btn-success">
+                <i class="fas fa-shopping-bag"></i> Browse Products
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

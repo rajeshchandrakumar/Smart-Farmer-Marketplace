@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}My Orders - Smart Farmer Marketplace{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2>My Orders</h2>
+        <p class="text-muted">Orders for products you sell</p>
+    </div>
+</div>
+
+{% if order_details %}
+<div class="row">
+    <div class="col-12">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Buyer</th>
+                        <th>Total Amount</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Items</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order_detail in order_details %}
+                    {% set order = order_detail.order %}
+                    {% set order_items = order_detail.order_items %}
+                    <tr>
+                        <td>#{{ order.id }}</td>
+                        <td>
+                            <strong>{{ order.buyer.user.name }}</strong><br>
+                            <small>{{ order.phone }}<br>{{ order.email }}</small>
+                        </td>
+                        <td>
+                            ₹{{ "%.2f"|format(order.total_amount) }}<br>
+                            <small>{{ order.payment_method|title }}</small>
+                        </td>
+                        <td>{{ order.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            {% if order.status == 'pending' %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% elif order.status == 'confirmed' %}
+                                <span class="badge bg-primary">Confirmed</span>
+                            {% elif order.status == 'shipped' %}
+                                <span class="badge bg-info">Shipped</span>
+                            {% elif order.status == 'delivered' %}
+                                <span class="badge bg-success">Delivered</span>
+                            {% elif order.status == 'cancelled' %}
+                                <span class="badge bg-danger">Cancelled</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ order.status|title }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% for item in order_items %}
+                                <div>{{ item.product.name }} ({{ item.quantity }})</div>
+                            {% endfor %}
+                            <hr>
+                            <small>
+                                <strong>Delivery Address:</strong><br>
+                                {{ order.address }}<br>
+                                {{ order.city }}, {{ order.state }} {{ order.zip_code }}
+                            </small>
+                        </td>
+                        <td>
+                            {% if order.status == 'pending' %}
+                                <form method="POST" action="{{ url_for('update_order_status', order_id=order.id) }}" class="d-inline">
+                                    <input type="hidden" name="status" value="confirmed">
+                                    <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Confirm this order?')">Confirm</button>
+                                </form>
+                                <form method="POST" action="{{ url_for('update_order_status', order_id=order.id) }}" class="d-inline">
+                                    <input type="hidden" name="status" value="cancelled">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Cancel this order?')">Cancel</button>
+                                </form>
+                            {% elif order.status == 'confirmed' %}
+                                <form method="POST" action="{{ url_for('update_order_status', order_id=order.id) }}" class="d-inline">
+                                    <input type="hidden" name="status" value="shipped">
+                                    <button type="submit" class="btn btn-sm btn-info" onclick="return confirm('Mark as shipped?')">Ship</button>
+                                </form>
+                            {% elif order.status == 'shipped' %}
+                                <form method="POST" action="{{ url_for('update_order_status', order_id=order.id) }}" class="d-inline">
+                                    <input type="hidden" name="status" value="delivered">
+                                    <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Mark as delivered?')">Deliver</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row">
+    <div class="col-12">
+        <div class="text-center py-5">
+            <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+            <h4>No orders yet</h4>
+            <p class="text-muted">You don't have any orders for your products yet</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+function updateOrderStatus(orderId, newStatus) {
+    if (confirm(`Are you sure you want to change the order status to ${newStatus}?`)) {
+        fetch(`/farmer/update-order/${orderId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `status=${newStatus}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Failed to update order status');
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

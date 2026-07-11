@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Products - Smart Farmer Marketplace{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2>Browse Products</h2>
+        <p class="text-muted">Find fresh products from local farmers</p>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label for="category" class="form-label">Category</label>
+                <select name="category" id="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat }}" {% if request.args.get('category') == cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="min_price" class="form-label">Min Price</label>
+                <input type="number" name="min_price" id="min_price" class="form-control" value="{{ request.args.get('min_price') or '' }}" placeholder="₹0">
+            </div>
+            <div class="col-md-2">
+                <label for="max_price" class="form-label">Max Price</label>
+                <input type="number" name="max_price" id="max_price" class="form-control" value="{{ request.args.get('max_price') or '' }}" placeholder="₹1000">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-success w-100">Filter</button>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <a href="{{ url_for('browse_products') }}" class="btn btn-outline-secondary w-100">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Products Grid -->
+<div class="row">
+    {% if products %}
+        {% for product in products %}
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card h-100 product-card">
+                {% if product.image_path %}
+                    <img src="{{ url_for('static', filename='images/uploads/' + product.image_path) }}" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x200/8FBC8F/FFFFFF?text={{ product.name[:20]|urlencode }}';" class="card-img-top product-image" alt="{{ product.name }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/300x200/8FBC8F/FFFFFF?text={{ product.name[:20]|urlencode }}" class="card-img-top product-image" alt="{{ product.name }}">
+                {% endif %}
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text flex-grow-1">{{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}</p>
+                    <div class="mt-auto">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-success">₹{{ "%.2f"|format(product.price) }}</span>
+                            <small class="text-muted"><i class="fas fa-tags"></i> {{ product.category }}</small>
+                        </div>
+                        <div class="mt-2">
+                            <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-success btn-sm w-100">View Details</a>
+                        </div>
+                        <div class="mt-2">
+                            <a href="{{ url_for('add_to_cart', product_id=product.id) }}" class="btn btn-outline-success btn-sm w-100">
+                                <i class="fas fa-shopping-cart"></i> Add to Cart
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                <h4>No products found</h4>
+                <p class="text-muted">Try adjusting your filters or check back later for new products.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Order #{{ order.id }} - Smart Farmer Marketplace{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2>Order Details #{{ order.id }}</h2>
+        <p class="text-muted">View details of your order</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5>Order Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Order ID:</strong> #{{ order.id }}</p>
+                <p><strong>Date:</strong> {{ order.created_at.strftime('%B %d, %Y %H:%M') }}</p>
+                <p><strong>Status:</strong>
+                    {% if order.status == 'pending' %}
+                        <span class="badge bg-warning text-dark">Pending</span>
+                    {% elif order.status == 'confirmed' %}
+                        <span class="badge bg-primary">Confirmed</span>
+                    {% elif order.status == 'shipped' %}
+                        <span class="badge bg-info">Shipped</span>
+                    {% elif order.status == 'delivered' %}
+                        <span class="badge bg-success">Delivered</span>
+                    {% elif order.status == 'cancelled' %}
+                        <span class="badge bg-danger">Cancelled</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ order.status|title }}</span>
+                    {% endif %}
+                </p>
+                <p><strong>Total Amount:</strong> ₹{{ "%.2f"|format(order.total_amount) }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5>Delivery Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Name:</strong> {{ order.first_name }} {{ order.last_name }}</p>
+                <p><strong>Email:</strong> {{ order.email }}</p>
+                <p><strong>Phone:</strong> {{ order.phone }}</p>
+                <p><strong>Address:</strong> {{ order.address }}</p>
+                <p><strong>City:</strong> {{ order.city }}</p>
+                <p><strong>State:</strong> {{ order.state }}</p>
+                <p><strong>ZIP Code:</strong> {{ order.zip_code }}</p>
+                <p><strong>Payment Method:</strong> {{ order.payment_method|title }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5>Order Items</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order_items %}
+                            <tr>
+                                <td>
+                                    {% if item.product.image_path %}
+                                        <img src="{{ url_for('static', filename='images/uploads/' + item.product.image_path) }}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50x50/8FBC8F/FFFFFF?text={{ item.product.name[:1]|urlencode }}';" width="50" height="50" class="rounded me-2" alt="{{ item.product.name }}">
+                                    {% else %}
+                                        <img src="https://via.placeholder.com/50x50/8FBC8F/FFFFFF?text={{ item.product.name[:1]|urlencode }}" width="50" height="50" class="rounded me-2" alt="{{ item.product.name }}">
+                                    {% endif %}
+                                    <strong>{{ item.product.name }}</strong>
+                                </td>
+                                <td>₹{{ "%.2f"|format(item.price) }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>₹{{ "%.2f"|format(item.price * item.quantity) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="3" class="text-end">Total:</th>
+                                <th>₹{{ "%.2f"|format(order.total_amount) }}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-12">
+        <a href="{{ url_for('order_history') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Order History
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+# Install dependencies
+pip install -r requirements.txt
+
+# Import your data
+python export_data.py import export_20260208_114003
+
+# Run the application
+python app.py

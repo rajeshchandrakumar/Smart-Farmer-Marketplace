@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Approve Products - Smart Farmer Marketplace{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2>Manage Products</h2>
+        <p class="text-muted">Approve or reject product submissions</p>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-12">
+        <a href="{{ url_for('admin_manage_products') }}" class="btn btn-warning me-2">
+            <i class="fas fa-edit"></i> Edit All Products
+        </a>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Pending Products Section -->
+{% if pending_products %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h4>Pending Approval ({{ pending_products|length }})</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Farmer</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Submitted</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in pending_products %}
+                            <tr>
+                                <td>
+                                    {% if product.image_path %}
+                                        <img src="{{ url_for('static', filename='images/uploads/' + product.image_path) }}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50x50/8FBC8F/FFFFFF?text={{ product.name[:1]|urlencode }}';" width="50" height="50" class="rounded me-2" alt="{{ product.name }}">
+                                    {% else %}
+                                        <img src="https://via.placeholder.com/50x50/8FBC8F/FFFFFF?text={{ product.name[:1]|urlencode }}" width="50" height="50" class="rounded me-2" alt="{{ product.name }}">
+                                    {% endif %}
+                                    <strong>{{ product.name }}</strong>
+                                </td>
+                                <td>{{ product.farmer.farm_name }}</td>
+                                <td>{{ product.category }}</td>
+                                <td>₹{{ "%.2f"|format(product.price) }}</td>
+                                <td>{{ product.quantity }}</td>
+                                <td>{{ product.created_at.strftime('%B %d, %Y') }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('approve_product', product_id=product.id) }}" class="d-inline me-2">
+                                        <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Are you sure you want to approve this product?')">
+                                            <i class="fas fa-check"></i> Approve
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('reject_product', product_id=product.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to reject this product?')">
+                                            <i class="fas fa-times"></i> Reject
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Approved Products Section -->
+{% if approved_products %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4>Approved Products ({{ approved_products|length }})</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Farmer</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in approved_products %}
+                            <tr>
+                                <td>
+                                    {% if product.image_path %}
+                                        <img src="{{ url_for('static', filename='images/uploads/' + product.image_path) }}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50x50/8FBC8F/FFFFFF?text={{ product.name[:1]|urlencode }}';" width="50" height="50" class="rounded me-2" alt="{{ product.name }}">
+                                    {% else %}
+                                        <img src="https://via.placeholder.com/50x50/8FBC8F/FFFFFF?text={{ product.name[:1]|urlencode }}" width="50" height="50" class="rounded me-2" alt="{{ product.name }}">
+                                    {% endif %}
+                                    <strong>{{ product.name }}</strong>
+                                </td>
+                                <td>{{ product.farmer.farm_name }}</td>
+                                <td>{{ product.category }}</td>
+                                <td>₹{{ "%.2f"|format(product.price) }}</td>
+                                <td>{{ product.quantity }}</td>
+                                <td>
+                                    <span class="badge bg-success">Approved</span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-sm btn-outline-info" target="_blank">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if not pending_products and not approved_products %}
+<div class="row">
+    <div class="col-12">
+        <div class="text-center py-5">
+            <i class="fas fa-boxes fa-3x text-muted mb-3"></i>
+            <h4>No products found</h4>
+            <p class="text-muted">There are currently no products pending approval.</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}Platform Analytics - Smart Farmer Marketplace{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2>Platform Analytics</h2>
+        <p class="text-muted">Track platform performance and trends</p>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5>Total Revenue</h5>
+                <h2>₹{{ "%.2f"|format(total_revenue) }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5>Completed Orders</h5>
+                <h2>{{ completed_orders }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5>Total Products</h5>
+                <h2>{{ (top_products|length) + 0 }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5>Active Users</h5>
+                <h2>0</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Selling Products -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4>Top Selling Products</h4>
+            </div>
+            <div class="card-body">
+                {% if top_products %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Product</th>
+                                <th>Farmer</th>
+                                <th>Units Sold</th>
+                                <th>Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in top_products %}
+                            <tr>
+                                <td>
+                                    {% if loop.index == 1 %}
+                                        <span class="badge bg-warning text-dark">1st</span>
+                                    {% elif loop.index == 2 %}
+                                        <span class="badge bg-secondary">2nd</span>
+                                    {% elif loop.index == 3 %}
+                                        <span class="badge bg-danger">3rd</span>
+                                    {% else %}
+                                        {{ loop.index }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.product.image_path %}
+                                        <img src="{{ url_for('static', filename=item.product.image_path[7:]) }}" width="50" height="50" class="rounded me-2" alt="{{ item.product.name }}">
+                                    {% else %}
+                                        <img src="https://via.placeholder.com/50x50/8FBC8F/FFFFFF?text={{ item.product.name[:1] }}" width="50" height="50" class="rounded me-2" alt="{{ item.product.name }}">
+                                    {% endif %}
+                                    <strong>{{ item.product.name }}</strong>
+                                </td>
+                                <td>{{ item.product.farmer.farm_name }}</td>
+                                <td>{{ item.sold }}</td>
+                                <td>₹{{ "%.2f"|format(item.product.price * item.sold) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center py-4">No sales data available yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Growth Chart Placeholder -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4>User Registration Trend</h4>
+            </div>
+            <div class="card-body">
+                <canvas id="userGrowthChart" width="400" height="200"></canvas>
+                <p class="text-center mt-3">User registration trend chart would be displayed here.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4>Order Status Distribution</h4>
+            </div>
+            <div class="card-body">
+                <canvas id="orderStatusChart" width="400" height="200"></canvas>
+                <p class="text-center mt-3">Order status distribution chart would be displayed here.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Monthly Revenue Chart Placeholder -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4>Monthly Revenue</h4>
+            </div>
+            <div class="card-body">
+                <canvas id="monthlyRevenueChart" width="800" height="200"></canvas>
+                <p class="text-center mt-3">Monthly revenue chart would be displayed here.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Initialize charts
+document.addEventListener('DOMContentLoaded', function() {
+    // User Growth Chart
+    const userGrowthCtx = document.getElementById('userGrowthChart').getContext('2d');
+    new Chart(userGrowthCtx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'User Registrations',
+                data: [12, 19, 3, 5, 2, 3],
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    // Order Status Chart
+    const orderStatusCtx = document.getElementById('orderStatusChart').getContext('2d');
+    new Chart(orderStatusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Delivered', 'Shipped', 'Confirmed', 'Pending', 'Cancelled'],
+            datasets: [{
+                data: [45, 20, 15, 10, 10],
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 205, 86, 0.8)',
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(153, 102, 255, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Monthly Revenue Chart
+    const monthlyRevenueCtx = document.getElementById('monthlyRevenueChart').getContext('2d');
+    new Chart(monthlyRevenueCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Revenue (₹)',
+                data: [12000, 19000, 3000, 5000, 2000, 3000],
+                backgroundColor: 'rgba(75, 192, 192, 0.6)'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

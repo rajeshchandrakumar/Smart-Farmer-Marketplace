@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Add Feedback - Smart Farmer Marketplace{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h3>Add Feedback for {{ product.name }}</h3>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        {% if product.image_path %}
+                            <img src="{{ url_for('static', filename='images/uploads/' + product.image_path) }}" onerror="this.onerror=null;this.src='https://via.placeholder.com/200x200/8FBC8F/FFFFFF?text={{ product.name[:20]|urlencode }}';" class="img-fluid rounded" alt="{{ product.name }}">
+                        {% else %}
+                            <img src="https://via.placeholder.com/200x200/8FBC8F/FFFFFF?text={{ product.name[:20]|urlencode }}" class="img-fluid rounded" alt="{{ product.name }}">
+                        {% endif %}
+                    </div>
+                    <div class="col-md-8">
+                        <h4>{{ product.name }}</h4>
+                        <p class="text-muted">{{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}</p>
+                        <p><strong>Price:</strong> ₹{{ "%.2f"|format(product.price) }}</p>
+                        <p><strong>Sold by:</strong> {{ product.farmer.farm_name }}</p>
+                    </div>
+                </div>
+                
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="rating" class="form-label">Rating</label>
+                        <div class="rating-input">
+                            <input type="radio" class="btn-check" name="rating" id="rating1" value="1" autocomplete="off">
+                            <label class="btn btn-outline-warning" for="rating1"><i class="fas fa-star"></i></label>
+                            
+                            <input type="radio" class="btn-check" name="rating" id="rating2" value="2" autocomplete="off">
+                            <label class="btn btn-outline-warning" for="rating2"><i class="fas fa-star"></i></label>
+                            
+                            <input type="radio" class="btn-check" name="rating" id="rating3" value="3" autocomplete="off">
+                            <label class="btn btn-outline-warning" for="rating3"><i class="fas fa-star"></i></label>
+                            
+                            <input type="radio" class="btn-check" name="rating" id="rating4" value="4" autocomplete="off">
+                            <label class="btn btn-outline-warning" for="rating4"><i class="fas fa-star"></i></label>
+                            
+                            <input type="radio" class="btn-check" name="rating" id="rating5" value="5" autocomplete="off">
+                            <label class="btn btn-outline-warning" for="rating5"><i class="fas fa-star"></i></label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Your Review</label>
+                        <textarea class="form-control" id="comment" name="comment" rows="4" placeholder="Share your experience with this product..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success w-100">Submit Feedback</button>
+                </form>
+                
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Product
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Add interactivity to rating buttons
+document.querySelectorAll('.rating-input input').forEach(radio => {
+    radio.addEventListener('change', function() {
+        // Remove active class from all labels
+        document.querySelectorAll('.rating-input label').forEach(label => {
+            label.classList.remove('active');
+        });
+        
+        // Add active class to selected label and all previous ones
+        const selectedValue = parseInt(this.value);
+        for (let i = 1; i <= selectedValue; i++) {
+            const label = document.getElementById(`rating${i}`).previousElementSibling;
+            if (label) {
+                label.classList.add('active');
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
